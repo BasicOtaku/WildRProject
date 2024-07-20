@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta DNI</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5">Consulta DNI</h1>
+        <h2>Consideraciones</h2>
+        <p>Este servicio no se conecta con RENIEC.</p>
+        <p>El origen de datos depende del padrón reducido SUNAT y otras fuentes públicas.</p>
+        <p>El padrón reducido SUNAT no devuelve datos de menores de edad, dirección, fecha de nacimiento, sexo.</p>
+        <p>En algunos casos no se obtendrá resultado de la consulta debido a la información de las fuentes públicas, esto no debe considerarse como falla o error del servicio.</p>
+
+        <h2>Consulta DNI</h2>
+        <form id="dniForm" class="form-inline mb-4">
+            <div class="form-group mr-2">
+                <label for="dni" class="mr-2">Ingrese DNI:</label>
+                <input type="text" class="form-control" id="dni" name="dni" maxlength="8" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Consultar</button>
+        </form>
+
+        <h2>Resultado</h2>
+        <div id="result" class="border p-3"></div>
+    </div>
+
+    <script>
+        document.getElementById('dniForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const dni = document.getElementById('dni').value;
+            fetch('/consultar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ dni: dni })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById('result');
+                if (data.success) {
+                    const { apellido_paterno, apellido_materno, nombres, numero, nombre_completo, codigo_verificacion } = data.data;
+                    resultDiv.innerHTML = `
+                        <p><strong>Nombre Completo:</strong> ${nombre_completo}</p>
+                        <p><strong>Nombres:</strong> ${nombres}</p>
+                        <p><strong>Apellido Paterno:</strong> ${apellido_paterno}</p>
+                        <p><strong>Apellido Materno:</strong> ${apellido_materno}</p>
+                        <p><strong>Numero:</strong> ${numero}</p>
+                        <p><strong>Codigo de Verificación:</strong> ${codigo_verificacion}</p>
+                    `;
+                } else {
+                    resultDiv.innerHTML = '<p class="text-danger">No se encontró información para el DNI ingresado.</p>';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
